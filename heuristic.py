@@ -1,76 +1,51 @@
-"""
-• Có T giáo viên 1,2,..., T cần được phân công dạy các môn học cho các lớp. Có M môn học 1, 2, ..., M
-• Có N lớp học 1, 2,..., N. Mỗi lớp học có 1 danh sách các môn học (lấy từ 1, 2, ..., M). Mỗi lớp học gắn với 1 môn được gọi là lớp-môn
-• Mỗi môn học có số tiết là d(m)
-• Mỗi giáo viên t có danh sách các môn mà giáo viên đó có thể dạy
-• Mỗi buổi học được chia thành 5 tiết
-• Cần xây dựng kế hoạch phân công giáo viên cũng như thời khóa biểu (ngày/tiết bắt đầu) cho mỗi lớp-môn thỏa mãn:
-    • Các lớp-môn của cùng lớp thì không được xếp thời khóa biểu chồng lấp lên nhau
-    • Các lớp-môn được phân công cho cùng giáo viên cũng không được xếp thời khóa biểu chồng lấp lên nhau
-• Mặc định 1 tuần có 5 ngày và 1 ngày có 2 buổi học
-
-
-• Input:
-    • Dòng 1: T (số giáo viên), N (số lớp), M (số môn)
-    • Dòng i+1 (i= 1,..., N): ghi danh sách các môn mà lớp i cần phải học (kết thúc bởi 0)
-    • Dòng thứ t + N + 1 (t = 1,2,.., T): ghi danh sách các môn mà giáo viên t có thể dạy (kết thúc bởi 0)
-    • Dòng thứ N + T + 2: ghi d(m) là số tiết của môn m (m = 1,..., M)
-"""
-"""
-• Notation:
-    • G(c) is the set of subjects that teacher c has
-    • Z/Sub_Cla is dictionary containing (subject - class)
-   
-• Variables:
-    • X(m,g,t) = 1 if subject m ∈ Z is taught by teacher g ∈ {1,2,...,T} at shift t ∈ {1,2,...,50} else 0
-• Constraints:
-    • (for each g ∈ t (for each t ∈ 50)) Sum(X(m,g,t)) = {0,1} for m ∈ Z
-
-
-    • (for each m ∈ Z (for each t ∈ 50)) Sum(X(m,g,t)) = {0,1} for g ∈ T
-   
-    • Sum(X(m,g,t)) = d(m) for m ∈ Z, g ∈ {1,2,...,T}, t ∈ {1,2,...,50}
-"""
-
+#!/usr/bin/python3
 
 import sys
-def new_input():
-T,N,M = map(int, input().split())
-	for _ in range(T):
-		
+from collections import defaultdict
+
 def input(filename):
     with open(filename) as f:
         lines = f.readlines()
         [T, N, M] = [int(x) for x in lines[0].split()]
-        for _ in range(N):
-            class_subjects = [int(x) for x in lines[_ + 1].split()][0:-2]
-        for _ in range(T):
-            teacher_subjects = [int(x) for x in lines[_ + N + 1].split()][0:-2]
-        subject_duration = [int(x) for x in lines[T + N + 1].split()]
+        class_subjects = [list(map(lambda x: int(x)-1,line.replace("0","").split())) for line in lines[1:1+N]]
+        teacher_subjects = [list(map(lambda x: int(x)-1,line.replace("0","").split())) for line in lines[1+N:1+N+T]]
+        subject_duration = [int(d) for d in lines[T + N + 1].split()]
     return T, N, M, class_subjects, teacher_subjects, subject_duration
-T, N, M, class_subjects, teacher_subjects, subject_duration = input("data.txt")
-print(T, N, M, class_subjects, teacher_subjects, subject_duration)
-
-
-from collections import defaultdict
-
 
 def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
-	
-	schedule = defaultdict(lambda: (0,0,0,0))
-	available = [[False] for i in range(
+    schedule = defaultdict(lambda x: (0,0,0,0))
+    teachers_available = [(teacher, list(map(lambda x: [x,-1],subject))) for teacher,subject in enumerate(teacher_subjects)]
+
+    # Sử dụng thuật toán greedy để tìm ra giáo viên phù hợp nhất cho mỗi lớp-môn theo thứ tự ưu tiên của môn đã biết của giáo viên và số lớp môn đã phân cho giáo viên đó.
+    # Sắp xếp lớp-môn theo số tiết học giảm dần để tránh trường hợp phân công giáo viên cho môn dài hơn mà không còn thời gian.
+    classes = [(i,[(k,subject_duration[k]) for k in j]) for i,j in enumerate(class_subjects)]
+    classes.sort(key = lambda c: sum([x[1] for x in c[1]]),reverse=True)
+
+    # Xếp thời khóa biểu cho lớp-môn đầu tiên vào các ngày và tiết trống trước tiên trong tuần.
+    for i,c in classes:
+        print(c)
+        period = 0
+        for sub, duration in c:
+            status = False
+            for teacher,subject_available in teachers_available:
+                if ([sub,-1] in subject_available) and (period not in list(map(lambda x: x[1], subject_available))):
+                    status = True
+            if status:
+                schedule.append(i,sub,period,teacher)
+                #add period vao status available cua giao vien
+                # ...
+                period += duration
+
+    # Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
+    # Nếu không tìm thấy thời khóa biểu phù hợp, hãy tìm một lớp-môn đã phân công và thay đổi thời khóa biểu của nó để tạo ra thời khóa biểu trống cho lớp-môn mới.
+    
 
 
-classes = [i, sub for i, sub in enumerate(class_subjects)]
-	classes.sort(key = lambda x:x[1], reverse = True)
+
+def main():
+    T, N, M, class_subjects, teacher_subjects, subject_duration = input("data.txt")
+    schedule(T,N,M,class_subjects, teacher_subjects, subject_duration)
 
 
-	teachers = [i, t for i,t in enumerate(teachers)]
-
-
-	subject = [i, d for i,d in enumerate(duration)]
-	
-	for i,sub in subjects:
-		for j,class in classes:
-			for k,teacher  in teachers:
-				if (sub in teacher) and (available[i][k])
+if __name__ == "__main__":
+    main()
