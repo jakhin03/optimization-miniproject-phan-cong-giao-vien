@@ -27,16 +27,18 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
         period = 0
         for sub, duration in c:
             status = False
-            for teacher,subject_available in teachers_available:
-                if ([sub,-1] in subject_available) and (period not in list(map(lambda x: x[1], subject_available))):
+            for teacher,subject_available in teachers_available: 
+                if ([sub,-1] in subject_available) and check(period,subject_available):
                     status = True
             if status:
                 schedule.append(i,sub,period,teacher)
                 #add period vao status available cua giao vien
-                # ...
+                teachers_available[teacher][teachers_available[teacher].index([sub,-1])] = period
                 period += duration
-
-    # Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
+    def check():
+        # Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
+        
+    
     # Nếu không tìm thấy thời khóa biểu phù hợp, hãy tìm một lớp-môn đã phân công và thay đổi thời khóa biểu của nó để tạo ra thời khóa biểu trống cho lớp-môn mới.
     
 
