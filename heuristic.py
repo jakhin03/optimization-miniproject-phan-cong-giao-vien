@@ -34,11 +34,8 @@ def find_index(mylist, char):
     return False
 
 def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
-    def can_teach(teacher, course):
-        return course in teachers[teacher]
-
     schedule = []
-    teachers_available = [[teacher, list(map(lambda x: [x,0],subject))] for teacher,subject in enumerate(teacher_subjects)]
+    teachers_available = [[teacher, list(map(lambda x: [x,[]],subject))] for teacher,subject in enumerate(teacher_subjects)]
 
     # Sử dụng thuật toán greedy để tìm ra giáo viên phù hợp nhất cho mỗi lớp-môn theo thứ tự ưu tiên của môn đã biết của giáo viên và số lớp môn đã phân cho giáo viên đó.
     # Sắp xếp lớp-môn theo số tiết của một môn phải học giảm dần để tránh trường hợp phân công giáo viên cho môn dài hơn mà không còn thời gian.
@@ -57,7 +54,8 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
             for teacher,subject_available in teachers_available: 
                 subject_index = find_index(subject_available,sub)
                 if subject_index:
-                    if (subject_available[subject_index][1] <= shift):# Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
+                    if (shift not in range(i,j) for i,j in subject_available[subject_index][1]):# Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
+                        print(subject_available[subject_index][1])
                         subject_index_done = subject_index
                         teacher_done = teacher
                         status = True
@@ -65,7 +63,7 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
             if status:
                 schedule.append((i,sub,shift,teacher_done))
                 #add shift vao status available cua giao vien
-                teachers_available[teacher_done][1][subject_index_done][1] += duration
+                teachers_available[teacher_done][1][subject_index_done][1].append((shift,shift+duration))
                 shift += duration
         
 
@@ -78,6 +76,7 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
 def main():
     T, N, M, class_subjects, teacher_subjects, subject_duration = input_("data.txt")
     time_table = schedule(T,N,M,class_subjects, teacher_subjects, subject_duration)
+    time_table.sort(key = lambda x:(x[0],x[1]))
     for x,y,u,v in time_table:
         print(f"Class {x+1} subject {y+1} shift {u+1} teacher {v+1}")
 
