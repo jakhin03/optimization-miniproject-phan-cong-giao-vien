@@ -18,7 +18,7 @@
 
 import sys
 
-def input_(filename):
+def input_data(filename):
     with open(filename) as f:
         lines = f.readlines()
         [T, N, M] = [int(x) for x in lines[0].split()]
@@ -75,7 +75,7 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
 
 
 def main():
-    T, N, M, class_subjects, teacher_subjects, subject_duration = input_("data.txt")
+    T, N, M, class_subjects, teacher_subjects, subject_duration = input_data("data.txt")
     time_table = schedule(T,N,M,class_subjects, teacher_subjects, subject_duration)
     time_table.sort(key = lambda x:(x[0],x[1]))
     [print(f"Class {x+1} subject {y+1} shift {u+1} teacher {v+1}") for (x,y,u,v) in time_table]
