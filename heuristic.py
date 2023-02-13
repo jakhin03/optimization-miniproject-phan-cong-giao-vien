@@ -31,7 +31,7 @@ def find_index(mylist, char):
     for sub_list in mylist:
         if char in sub_list:
             return (mylist.index(sub_list))
-    return False
+    return -1
 
 def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
     schedule = []
@@ -46,17 +46,14 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
     subject_index_done = None
     subject_index = None
 
-    print(classes)
     # Xếp thời khóa biểu cho lớp-môn đầu tiên vào các ngày và tiết trống trước tiên trong tuần.
     for i,c in classes:
         shift = 0
         for sub, duration in c:
             status = False
             for teacher,subject_non_available in teachers_non_available: 
-                print(sub)
                 subject_index = find_index(subject_non_available,sub)
-                if subject_index:
-                    print(f"class {i} sub {sub} list {subject_non_available} index {subject_index} shift {shift}")
+                if subject_index != -1:
                     if (shift not in range(i,j) for i,j in subject_non_available[subject_index][1]):# Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
                         subject_index_done = subject_index
                         teacher_done = teacher
