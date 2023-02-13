@@ -72,9 +72,10 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
 
 
 def main():
-    T, N, M, class_subjects, teacher_subjects, subject_duration = input_data("data.txt")
+    T, N, M, class_subjects, teacher_subjects, subject_duration = input_data(input("data file path: "))
     time_table = schedule(T,N,M,class_subjects, teacher_subjects, subject_duration)
     time_table.sort(key = lambda x:(x[0],x[1]))
+    print(len(time_table))
     [print(f"Class {x+1} subject {y+1} shift {u+1} teacher {v+1}") for (x,y,u,v) in time_table]
 
 if __name__ == "__main__":
