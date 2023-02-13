@@ -35,35 +35,36 @@ def find_index(mylist, char):
 
 def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
     schedule = []
-    teachers_available = [[teacher, list(map(lambda x: [x,[]],subject))] for teacher,subject in enumerate(teacher_subjects)]
+    teachers_non_available = [[teacher, list(map(lambda x: [x,[]],subject))] for teacher,subject in enumerate(teacher_subjects)] #format each element: [teacher,[subject 1,[shift begin, shift end],[subject 2,[shift begin, shift end], ...]]]
 
     # Sử dụng thuật toán greedy để tìm ra giáo viên phù hợp nhất cho mỗi lớp-môn theo thứ tự ưu tiên của môn đã biết của giáo viên và số lớp môn đã phân cho giáo viên đó.
     # Sắp xếp lớp-môn theo số tiết của một môn phải học giảm dần để tránh trường hợp phân công giáo viên cho môn dài hơn mà không còn thời gian.
-    classes = [(i,[(k,subject_duration[k]) for k in j]) for i,j in enumerate(class_subjects)]
+    classes = [(i,[(k,subject_duration[k]) for k in j]) for i,j in enumerate(class_subjects)] #format each element(class) [(class,[(subject 1, duration of subject 1), (subject 2, duration of subject 2), ...])]
     classes.sort(key = lambda c: sum([x[1] for x in c[1]]),reverse=True)
 
     teacher_done = None
     subject_index_done = None
     subject_index = None
 
+    print(classes)
     # Xếp thời khóa biểu cho lớp-môn đầu tiên vào các ngày và tiết trống trước tiên trong tuần.
     for i,c in classes:
         shift = 0
         for sub, duration in c:
             status = False
-            for teacher,subject_available in teachers_available: 
-                subject_index = find_index(subject_available,sub)
+            for teacher,subject_non_available in teachers_non_available: 
+                print(sub)
+                subject_index = find_index(subject_non_available,sub)
                 if subject_index:
-                    if (shift not in range(i,j) for i,j in subject_available[subject_index][1]):# Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
-                        print(subject_available[subject_index][1])
+                    print(f"class {i} sub {sub} list {subject_non_available} index {subject_index} shift {shift}")
+                    if (shift not in range(i,j) for i,j in subject_non_available[subject_index][1]):# Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
                         subject_index_done = subject_index
                         teacher_done = teacher
                         status = True
                         break
             if status:
                 schedule.append((i,sub,shift,teacher_done))
-                #add shift vao status available cua giao vien
-                teachers_available[teacher_done][1][subject_index_done][1].append((shift,shift+duration))
+                teachers_non_available[teacher_done][1][subject_index_done][1].append((shift,shift+duration))
                 shift += duration
         
 
@@ -77,8 +78,7 @@ def main():
     T, N, M, class_subjects, teacher_subjects, subject_duration = input_("data.txt")
     time_table = schedule(T,N,M,class_subjects, teacher_subjects, subject_duration)
     time_table.sort(key = lambda x:(x[0],x[1]))
-    for x,y,u,v in time_table:
-        print(f"Class {x+1} subject {y+1} shift {u+1} teacher {v+1}")
+    [print(f"Class {x+1} subject {y+1} shift {u+1} teacher {v+1}") for (x,y,u,v) in time_table]
 
 if __name__ == "__main__":
     main()
