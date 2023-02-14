@@ -22,10 +22,17 @@ def input_data(filename):
     with open(filename) as f:
         lines = f.readlines()
         [T, N, M] = [int(x) for x in lines[0].split()]
-        class_subjects = [list(map(lambda x: int(x)-1,line.replace("0","").split())) for line in lines[1:1+N]]
-        teacher_subjects = [list(map(lambda x: int(x)-1,line.replace("0","").split())) for line in lines[1+N:1+N+T]]
+        class_subjects = [list(map(lambda x: int(x)-1,(line.strip())[:-2].split())) for line in lines[1:1+N]]
+        teacher_subjects = [list(map(lambda x: int(x)-1,(line.strip())[:-2].split())) for line in lines[1+N:1+N+T]]
         subject_duration = [int(d) for d in lines[T + N + 1].split()]
     return T, N, M, class_subjects, teacher_subjects, subject_duration
+
+def check(teacher_list, char):
+    for teacher, mylist in teacher_list:
+        for sublist in mylist:
+            if char in sublist:
+                return True
+    return False
 
 def find_index(mylist, char):
     for sub_list in mylist:
@@ -36,7 +43,6 @@ def find_index(mylist, char):
 def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
     schedule = []
     teachers_non_available = [[teacher, list(map(lambda x: [x,[]],subject))] for teacher,subject in enumerate(teacher_subjects)] #format each element: [teacher,[subject 1,[shift begin, shift end],[subject 2,[shift begin, shift end], ...]]]
-
     # Sử dụng thuật toán greedy để tìm ra giáo viên phù hợp nhất cho mỗi lớp-môn theo thứ tự ưu tiên của môn đã biết của giáo viên và số lớp môn đã phân cho giáo viên đó.
     # Sắp xếp lớp-môn theo số tiết của một môn phải học giảm dần để tránh trường hợp phân công giáo viên cho môn dài hơn mà không còn thời gian.
     classes = [(i,[(k,subject_duration[k]) for k in j]) for i,j in enumerate(class_subjects)] #format each element(class) [(class,[(subject 1, duration of subject 1), (subject 2, duration of subject 2), ...])]
@@ -49,12 +55,21 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
     # Xếp thời khóa biểu cho lớp-môn đầu tiên vào các ngày và tiết trống trước tiên trong tuần.
     for i,c in classes:
         shift = 0
-        for sub, duration in c:
+        z = 0
+        count = 0
+        while z < len(c):
+            sub, duration = c[z]
             status = False
-            for teacher,subject_non_available in teachers_non_available: 
+            count = 0
+            if not check(teachers_non_available,sub):
+                z += 1
+                continue
+            for teacher,subject_non_available in teachers_non_available:
+                count += 1
+
                 subject_index = find_index(subject_non_available,sub)
                 if subject_index != -1:
-                    if (shift not in range(i,j) for i,j in subject_non_available[subject_index][1]):# Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
+                    if all([((shift > j) or (shift + duration < i)) for i,j in subject_non_available[subject_index][1]]):# Khi phân công lớp-môn tiếp theo, kiểm tra xem lớp-môn đó có thể được phân công vào các ngày và tiết trống còn lại mà không gây chồng lấp với các lớp-môn đã phân công trước đó.
                         subject_index_done = subject_index
                         teacher_done = teacher
                         status = True
@@ -63,8 +78,10 @@ def schedule(T,N,M,class_subjects, teacher_subjects, subject_duration):
                 schedule.append((i,sub,shift,teacher_done))
                 teachers_non_available[teacher_done][1][subject_index_done][1].append((shift,shift+duration))
                 shift += duration
-        
-
+            else:
+                shift+=1
+                z -= 1
+            z += 1
     
     # Nếu không tìm thấy thời khóa biểu phù hợp, hãy tìm một lớp-môn đã phân công và thay đổi thời khóa biểu của nó để tạo ra thời khóa biểu trống cho lớp-môn mới.
     return schedule
