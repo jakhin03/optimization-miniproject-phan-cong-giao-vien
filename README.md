@@ -12,3 +12,6 @@
     • Các lớp-môn được phân công cho cùng giáo viên cũng không được xếp thời khóa biểu chồng lấp lên nhau
   • Mặc định 1 tuần có 5 ngày và 1 ngày có 2 buổi học
 ```
+
+## Algorithm:
+* Using heuristic method [solution](./heuristic.py)
